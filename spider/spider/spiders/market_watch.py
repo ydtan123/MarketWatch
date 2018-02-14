@@ -1,17 +1,11 @@
-#!/usr/bin/python
-
-import re
+# -*- coding: utf-8 -*-
 import scrapy
-
-from datetime import datetime
-from scrapy.selector import Selector
-from scrapy.http import HtmlResponse
-
-import ipdb
+from market_watch_app.models import ScrapeLog
 
 class MarketWatchSpider(scrapy.Spider):
-    name = 'market watcher'
-    start_urls = ['http://www.marketwatch.com/investing/stock/pcln/financials/income/quarter']
+    name = 'market_watch'
+    allowed_domains = ['www.marketwatch.com']
+    start_urls = ['http://www.marketwatch.com/investing/stock/pcln/financials/income/quarter/']
 
     def parse_cell_value(self, cell):
         val, unit = 0, ''
@@ -67,8 +61,8 @@ class MarketWatchSpider(scrapy.Spider):
 
     def parse(self, response):
         print("Start crawling")
+        log = ScrapeLog(response_body=response.text, create_time=timezone.now())
+        log.save()
         tables = Selector(response=response).xpath('//table[@class="crDataTable"]')
         for table in tables:
             self.parse_table(table)
-
-#if __name__ == "__main__":
